@@ -1,6 +1,5 @@
 from io import BytesIO
 from socket import socket
-from nephcli import NephCLI
 from prompt_toolkit import prompt
 from scapy.config import conf
 from scapy.all import *
@@ -12,10 +11,11 @@ from twisted.internet import task
 from twisted.internet.protocol import Protocol
 from twisted.internet.endpoints import TCP4ClientEndpoint, connectProtocol
 from functools import partial
+from protos.protocol import NephProtocol
 import logging
 
 
-class BGP(Protocol):
+class BGP(Protocol, NephProtocol):
     """
     BGP protocol implementation.
 
@@ -75,6 +75,12 @@ class BGP(Protocol):
                 self.timer.start(self.time)
 
     # Class attributes ---------------------------------------------------------
+
+    # Human name
+    name = "bgp"
+    
+    # Packet types used
+    packets = [ BGPOpen, BGPKeepAlive, BGPHeader, BGPNotification, BGPUpdate ]
 
     # Default session attributes
     defaults = {"ConnectRetryTime": 5, "HoldTime": 90, "KeepaliveTime": 30}

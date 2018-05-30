@@ -4,27 +4,42 @@
 # -------------------------------------
 # Driver
 
-import pkgutil
-import protos
-from nephcli import NephCLI
+import pprint
+import protos as ps
+import fuzzers as fz
+from protos import *
 from fuzzers import *
 
 version = "0.0.1"
+pp = pprint.PrettyPrinter(indent=4)
 
-def cmd_modules(cmd):
-    for module in pkgutil.iter_modules(['fuzzers']):
-        print(module.name)
+helpmsg = """
+Welcome to neph, the interactive protocol fuzzer.
 
-def cmd_enter_module(cmd):
-    bgpfuzzer.repl()
+Neph is a set of flexible building blocks you can use to build complex fuzzers
+for all kinds of network protocols. It is a wrapper around Scapy that provides
+two additional pieces of functionality:
+
+- Implementations of protocols
+- Enhanced fuzzing utilities
+
+These pieces are designed to be mixed and matched.
+
+For a complete reference, see the docs.
+To see a list of protocols, use protocols().
+To see a list of fuzzers, use fuzzers().
+"""
+
+def help():
+    print(helpmsg)
+
+def fuzzers():
+    pp.pprint(fz.fuzzers)
+
+def protocols():
+    pp.pprint(ps.protocols)
     
 
 if __name__ == '__main__':
     print("neph, the interactive protocol fuzzer")
     print("version {}".format(version))
-
-    cli = NephCLI()
-    cli.add_cmd("modules", cmd_modules)
-    for module in pkgutil.iter_modules(['fuzzers']):
-        cli.add_cmd(module.name, cmd_enter_module)
-    cli.repl()

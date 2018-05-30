@@ -1,1 +1,8 @@
-__all__ = ['bgp']
+from protos.bgp import BGP
+
+protocols = [
+    BGP.__name__
+]
+
+__all__ = protocols + []
+
