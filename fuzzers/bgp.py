@@ -20,4 +20,105 @@ from protos.bgp import BGP
 
 
 class BGPFuzzer(BGP, FuzzerMixin):
-    pass
+    """
+    BGP protocol fuzzer.
+    """
+
+    def __init__(self, neighbor=None, my_as=0, bgp_id=None, fuzzspec=None):
+        # initialize the protocol
+        super().__init__(neighbor=neighbor, my_as=my_as, bgp_id=bgp_id)
+        self.fuzzspec = fuzzspec or {
+            "BGPOpen": {
+                "header": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "version": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "my_as": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "hold_time": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "bgp_id": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "opt_param_len": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "opt_params": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+            },
+            "BGPKeepalive": {
+                "header": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                }
+            },
+            "BGPUpdate": {
+                "withdrawn_routes_len": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "withdrawn_routes": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "path_attr_len": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "path_attr": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "nlri": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+            },
+            "BGPNotification": {
+                "error_code": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "error_subcode": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+                "data": {
+                    "fuzz": False,
+                    "value": "default",
+                    "strategies": ["bitflip", "increment"],
+                },
+            },
+        }
+
+    def make_pkt(self, pktcls, *args, **kwargs):
+        msg = super().make_pkt(pktcls, *args, **kwargs)
+        # perform fuzzing routines
+        return msg

@@ -23,11 +23,6 @@ import fuzzers as fz
 from protos import *
 from fuzzers import *
 
-# Imports for interactive mode-------------------------------------------------
-
-
-# -----------------------------------------------------------------------------
-
 version = "0.0.1"
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -44,23 +39,29 @@ two additional pieces of functionality:
 These pieces are designed to be mixed and matched.
 
 For a complete reference, see the docs.
-To see a list of protocols, use protocols().
-To see a list of fuzzers, use fuzzers().
 """
 
 
-def help():
-    print(helpmsg)
-
-
 def fuzzers():
+    """
+    List available fuzzers.
+    """
     pp.pprint(fz.fuzzers)
 
 
 def protocols():
+    """
+    List available protocol implementations.
+    """
     pp.pprint(ps.protocols)
+
+
+basics = [fuzzers, protocols]
 
 
 if __name__ == "__main__":
     print("neph, the interactive protocol fuzzer")
     print("version {}".format(version))
+    print("\nBasic commands:")
+    for fn in basics:
+        print("- {}(): {}".format(fn.__name__, fn.__doc__))

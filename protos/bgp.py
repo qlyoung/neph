@@ -425,6 +425,9 @@ class BGP(Protocol, NephProtocol):
 
     # Message handling ---------------------------------------------------------
 
+    def make_pkt(self, pktcls, *args, **kwargs):
+        return self.msgbuilders[pktcls](*args, **kwargs)
+
     def make_OPEN(self):
         ht = self.sattrs["timers"]["HoldTimer"].time
         bgpopen = BGPHeader() / BGPOpen(
@@ -461,9 +464,9 @@ class BGP(Protocol, NephProtocol):
         elif msgtypestr == "ROUTE-REFRESH":
             pass
 
-    def send_bgp_msg(self, type, *args, **kwargs):
+    def send_bgp_msg(self, pktcls, *args, **kwargs):
         self.log.info("[>] {}".format(type))
-        msg = self.msgbuilders[type](*args, **kwargs)
+        msg = self.make_pkt(pktcls, *args, **kwargs)
         self.transport.write(bytes(msg))
 
     def handle_data_received(self):
