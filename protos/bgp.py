@@ -1,3 +1,20 @@
+# BGP protocol implementation.
+# -----------------------------------
+# Copyright (c) 2018, Quentin Young.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from io import BytesIO
 from socket import socket
 from prompt_toolkit import prompt
@@ -28,7 +45,6 @@ class BGP(Protocol, NephProtocol):
     # Internal classes ---------------------------------------------------------
 
     class BGPTimer(object):
-
         def errback(failure):
             print(failure.getBriefTraceback())
 
@@ -74,13 +90,15 @@ class BGP(Protocol, NephProtocol):
                 self.log.info("[+] Timer {} was not running".format(self.name))
                 self.timer.start(self.time)
 
-    # Class attributes ---------------------------------------------------------
+    # Protocol class attributes -----------------------------------------------
 
     # Human name
     name = "bgp"
-    
+
     # Packet types used
-    packets = [ BGPOpen, BGPKeepAlive, BGPHeader, BGPNotification, BGPUpdate ]
+    packets = [BGPOpen, BGPKeepAlive, BGPHeader, BGPNotification, BGPUpdate]
+
+    # BGP class attributes ----------------------------------------------------
 
     # Default session attributes
     defaults = {"ConnectRetryTime": 5, "HoldTime": 90, "KeepaliveTime": 30}
@@ -149,10 +167,10 @@ class BGP(Protocol, NephProtocol):
         }
 
         self.msgbuilders = {
-            "OPEN": self.make_OPEN,
-            "KEEPALIVE": self.make_KEEPALIVE,
-            "UPDATE": self.make_UPDATE,
-            "NOTIFICATION": self.make_NOTIFICATION,
+            BGPOpen: self.make_OPEN,
+            BGPKeepAlive: self.make_KEEPALIVE,
+            BGPUpdate: self.make_UPDATE,
+            BGPNotification: self.make_NOTIFICATION,
         }
 
         self.sattrs = {"ConnectRetryCounter": 0}

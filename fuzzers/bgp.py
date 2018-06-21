@@ -1,4 +1,4 @@
-# Package control for neph protocols.
+# BGP fuzzing stuff.
 # -----------------------------------
 # Copyright (c) 2018, Quentin Young.
 #
@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from fuzzers.fuzz import FuzzerMixin
 from protos.bgp import BGP
 
-protocols = [BGP.__name__]
 
-__all__ = protocols + []
+class BGPFuzzer(BGP, FuzzerMixin):
+    pass

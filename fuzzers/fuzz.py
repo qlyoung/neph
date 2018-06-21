@@ -1,4 +1,4 @@
-# Package control for neph protocols.
+# BGP fuzzing stuff.
 # -----------------------------------
 # Copyright (c) 2018, Quentin Young.
 #
@@ -15,8 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from protos.bgp import BGP
+import pprint
 
-protocols = [BGP.__name__]
 
-__all__ = protocols + []
+class FuzzerMixin(object):
+    """
+    Mixin inteded to extend Protocol subclasses.
+
+    Adds functionality for fuzzing. Assumes the same attributes present in the
+    Protocol class.
+    """
+
+    # List of packet types + fields we want to fuzz
+    fuzzlist = []
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def fuzzables(self):
+        names = []
+        pp = pprint.PrettyPrinter(indent=4)
+        for cls in self.packets:
+            names += [cls.__name__ + "." + field.name for field in cls.fields_desc]
+        pp.pprint(names)
+
+    def fuzz(self, fields):
+        fuzzlist += fields

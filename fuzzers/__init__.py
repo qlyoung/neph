@@ -1,7 +1,6 @@
-from fuzzers.bgpfuzzer import NephFuzzer 
+from fuzzers.fuzz import FuzzerMixin
+from fuzzers.bgp import BGPFuzzer
 
-fuzzers = [
-    NephFuzzer.__name__,
-]
+fuzzers = [BGPFuzzer.__name__]
 
 __all__ = fuzzers + []
