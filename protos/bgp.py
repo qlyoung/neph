@@ -351,6 +351,8 @@ class BGP(Protocol, NephProtocol):
             self.sattrs["timers"]["HoldTimer"].restart()
             # - changes its state to Established.
             self.to_Established()
+            self.send_bgp_msg("UPDATE")
+
         if self.state == "Established":
             # If the local system receives a KEEPALIVE message (Event 26), the
             # local system:
@@ -393,7 +395,19 @@ class BGP(Protocol, NephProtocol):
         return BGPKeepAlive()
 
     def make_UPDATE(self):
-        pass
+        ogpa = BGPPathAttr(type_flags=0x40, type_code=1, attribute=bytes([0x00]))
+        aspa = BGPPathAttr(
+            type_flags=0x40,
+            type_code=2,
+            attribute=bytes([0x02, 0x02, 0x1A, 0xAE, 0x0B, 0x62]),
+        )
+        nhpa = BGPPathAttr(
+            type_flags=0x40, type_code=0x03, attribute=bytes([0x3E, 0xB3, 0x17, 0x5D])
+        )
+        expa = BGPPathAttr(
+            type_flags=0xE0, type_code=0xFF, attribute=bytes([0x12, 0x34])
+        )
+        return BGPHeader() / BGPUpdate(path_attr=[ogpa, aspa, nhpa, expa])
 
     def recv_bgp_msg(self, msgtype, msglen, msg):
         if msgtype not in BGP.MESSAGE_TYPES:
@@ -418,6 +432,8 @@ class BGP(Protocol, NephProtocol):
     def send_bgp_msg(self, pktcls, *args, **kwargs):
         self.log.info("[>] {}".format(type))
         msg = self.make_pkt(pktcls, *args, **kwargs)
+        self.log.info(bytes(msg).hex())
+        bmsg = bytes(msg)
         self.transport.write(bytes(msg))
 
     def handle_data_received(self):
