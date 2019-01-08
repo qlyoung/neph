@@ -17,18 +17,16 @@
 
 from io import BytesIO
 from socket import socket
-from prompt_toolkit import prompt
 from scapy.config import conf
 from scapy.all import *
 from scapy.contrib.bgp import *
 from scapy.automaton import *
 from transitions import Machine
-from twisted.internet import reactor
-from twisted.internet import task
+from twisted.internet import reactor, task
 from twisted.internet.protocol import Protocol
 from twisted.internet.endpoints import TCP4ClientEndpoint, connectProtocol
 from functools import partial
-from protos.protocol import NephProtocol
+from protos.protocol import *
 import logging
 
 
@@ -42,61 +40,13 @@ class BGP(Protocol, NephProtocol):
     .. seealso:: :rfc:`4271`
     """
 
-    # Internal classes ---------------------------------------------------------
-
-    class BGPTimer(object):
-        def errback(failure):
-            print(failure.getBriefTraceback())
-
-        def __init__(self, name=None, time=0, handler=None):
-            self.name = name or "unnamed"
-            self.time = time
-            self.timer = None
-            self.handler = handler
-            self.args = None
-            self.log = logging.getLogger("BGP")
-            self.log.setLevel(level=logging.INFO)
-
-        def start(self, *args):
-            if self.time == 0:
-                raise ValueException("Timer value must be positive")
-
-            self.log.info("[+] Starting timer {}".format(self.name))
-            self.timer = task.LoopingCall(self.handler, *args)
-            self.timer.start(self.time, now=False).addErrback(self.errback)
-            self.args = args
-
-        def stop(self):
-            if not self.timer:
-                self.log.info("[!] Stopping nonexistent timer")
-                return
-
-            self.log.info("[+] Stopping timer {}".format(self.name))
-            if self.timer.running:
-                self.timer.stop()
-            else:
-                self.log.info("[+] timer {} already stopped".format(self.name))
-
-        def restart(self):
-            if not self.timer:
-                self.log.info("[!] Restarting nonexistent timer")
-                self.start()
-                return
-
-            self.log.info("[+] Restarting timer {}".format(self.name))
-            if self.timer.running:
-                self.timer.reset()
-            else:
-                self.log.info("[+] Timer {} was not running".format(self.name))
-                self.timer.start(self.time)
-
     # Protocol class attributes -----------------------------------------------
-
-    # Human name
-    name = "bgp"
 
     # Packet types used
     packets = [BGPOpen, BGPKeepAlive, BGPHeader, BGPNotification, BGPUpdate]
+
+    # Human name
+    name = "bgp"
 
     # BGP class attributes ----------------------------------------------------
 
@@ -167,10 +117,10 @@ class BGP(Protocol, NephProtocol):
         }
 
         self.msgbuilders = {
-            BGPOpen: self.make_OPEN,
-            BGPKeepAlive: self.make_KEEPALIVE,
-            BGPUpdate: self.make_UPDATE,
-            BGPNotification: self.make_NOTIFICATION,
+            "OPEN": self.make_OPEN,
+            "KEEPALIVE": self.make_KEEPALIVE,
+            "UPDATE": self.make_UPDATE,
+            "NOTIFICATION": self.make_NOTIFICATION,
         }
 
         self.sattrs = {"ConnectRetryCounter": 0}
@@ -183,9 +133,9 @@ class BGP(Protocol, NephProtocol):
         hltex = partial(self._event, "HoldTimer_Expires")
 
         self.sattrs["timers"] = {
-            "KeepaliveTimer": BGP.BGPTimer("KeepaliveTimer", kat, katex),
-            "ConnectRetryTimer": BGP.BGPTimer("ConnectRetryTimer", crt, crtex),
-            "HoldTimer": BGP.BGPTimer("HoldTimer", hlt, hltex),
+            "KeepaliveTimer": NephTimer(kat, "KeepaliveTimer", katex),
+            "ConnectRetryTimer": NephTimer(crt, "ConnectRetryTimer", crtex),
+            "HoldTimer": NephTimer(hlt, "HoldTimer", hltex),
         }
 
         self.neighbor = neighbor
@@ -426,6 +376,7 @@ class BGP(Protocol, NephProtocol):
     # Message handling ---------------------------------------------------------
 
     def make_pkt(self, pktcls, *args, **kwargs):
+        self.log.info("Calling builder for: {}".format(pktcls))
         return self.msgbuilders[pktcls](*args, **kwargs)
 
     def make_OPEN(self):
