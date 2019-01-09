@@ -87,7 +87,6 @@ class BGP(Protocol, NephProtocol):
         :type timers: dict
         """
         self.fsm = Machine(model=self, states=BGP.states, initial="Idle")
-        logging.basicConfig(level=logging.DEBUG)
         logging.getLogger("transitions").setLevel(level=logging.INFO)
 
         self.log = logging.getLogger("BGP")

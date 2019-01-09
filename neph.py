@@ -22,6 +22,7 @@ import protos as ps
 import fuzzers as fz
 from protos import *
 from fuzzers import *
+import logging
 
 version = "0.0.1"
 pp = pprint.PrettyPrinter(indent=4)
@@ -60,6 +61,12 @@ basics = [fuzzers, protocols]
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        format="%(asctime)s %(levelname)-4s %(message)s",
+        level=logging.DEBUG,
+        datefmt="%H:%M:%S",
+    )
+
     print("neph, the interactive protocol fuzzer")
     print("version {}".format(version))
     print("\nBasic commands:")
